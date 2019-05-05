@@ -1,0 +1,18 @@
+{% extends "../base.html" %}
+{% load static %}<!DOCTYPE html>
+
+{% if user.is_authenticated %}
+{% block breadcrumb %}
+    <p>Add to Carts Successful!</p>
+{% endblock %}
+{% block content %}
+    <form action="{% url 'browsePro' %}">
+
+        <input type="submit" class="btn btn-primary" value="Continue Shopping">
+    </form>
+    <br>
+    <a href="{% url 'viewcarts' %}"><button class="btn btn-success">Go to Checkout</button></a><br>
+
+{% endblock %}
+
+{%endif%}

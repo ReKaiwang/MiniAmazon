@@ -1,0 +1,310 @@
+import socket
+import threading
+import amazon_pb2
+import commu_pb2
+import protobuf_json
+from google.protobuf.internal.decoder import _DecodeVarint32
+from google.protobuf.internal.encoder import _EncodeVarint
+from parser2 import UPSParser
+from parser2 import WebRequestParser
+from parser2 import AResponseParser
+from parser2 import select_timeout_from_ACommands
+from parser2 import select_timeout_from_ACommunicate
+import time
+import datetime
+import json
+from parser2 import buy_to_pckid
+#from parser2 import generate_ToPack
+from parser2 import generate_Commands
+
+UPShost = '127.0.0.1'
+Webhost = '127.0.0.2'
+#worldhost = 'vcm-7990.vm.duke.edu'
+worldhost = 'vcm-5869.vm.duke.edu'
+#worldhost = 'vcm-7986.vm.duke.edu'
+#worldhost = '152.3.53.20'
+#worldhost = '67.159.88.34'
+worldport = 23456
+worldaddr = (worldhost, worldport)
+
+
+def listen_for_world(worldsocket, UPSsocket):
+    while True:
+        print("Recv response from world:")
+        whole_message = recv_response(worldsocket)
+        response = amazon_pb2.AResponses()
+        response.ParseFromString(whole_message)
+        print("----------------------------------")
+        print("world connent")
+        print(response)
+        print("----------------------------------")
+        # create a thread and handle
+        handler = threading.Thread(target = handle_world_request, args = (response, worldsocket, UPSsocket))
+        handler.start()
+        # handle_world_reqeust(response, worldsocket, UPSsocket)
+
+def listen_for_UPS(worldsocket, UPSsocket):
+    while True:
+        print("Recv response from UPS:")
+        whole_message = recv_response(UPSsocket)
+        response = commu_pb2.UCommunicate()
+        response.ParseFromString(whole_message)
+        print("----------------------------------")
+        print("UPS connent")
+        print(response)
+        print("----------------------------------")
+        # create a thread and handle
+        handler = threading.Thread(target = handle_UPS_request, args = (response, worldsocket, UPSsocket))
+        handler.start()
+        # handle_UPS_reqeust(response, worldsocket, UPSsocket)
+
+
+def listen_for_web(proxysocket, worldsocket, UPSsocket):
+    while True:
+        proxysocket.listen(4)
+        # print "Multithreaded Python server : Waiting for connections from TCP clients..."
+        (websocket, (ip,port)) = proxysocket.accept()
+        print("connected")
+        # recv request from front end
+        message = recv_response(websocket)
+        request = commu_pb2.ACommunicate()
+        request.ParseFromString(message)
+        print("----------------------------------")
+        print("Web content")
+        print(request)
+        print("----------------------------------")
+        # create a thread and handle
+        handler = threading.Thread(target = handle_web_request, args = (request, worldsocket, UPSsocket))
+        handler.start()
+        # handle_web_request(request, worldsocket, UPSsocket)
+
+def handle_world_request(request, worldsocket, UPSsocket):
+    ap = AResponseParser(request)
+    ap.add_num_in_warehouse()
+    # send acks
+    acommand = ap.generate_ack_response()
+    send_request(worldsocket, acommand)
+    # remove ack acommand
+    ap.delete_seq_in_DB()
+    # find those pck whose truck arrived
+    acommand = ap.get_APutOnTruck()
+    print("sending ACommands to world")
+    print(acommand)
+    send_request(worldsocket, acommand)
+    # update status whether
+    ap.update_status()
+    acommunicate = ap.generate_ALoadingFinished()
+    print("sending ACommunicate to UPS")
+    print(acommunicate)
+    send_request(UPSsocket, acommunicate)
+
+
+
+def handle_UPS_request(request, worldsocket, UPSsocket):
+    up = UPSParser(request)
+    # send acks
+    acommu = up.generate_ack_response()
+    send_request(UPSsocket, acommu)
+    # remove ack acommand
+    up.delete_seq_in_DB()
+    # insert truckid -> pckid
+    up.associate_tid_pid()
+    # check if some package is ready for put on truck
+    acommand = up.get_APutOnTruck()
+    send_request(worldsocket, acommand)
+    # update status whether
+    up.update_status()
+
+
+
+
+
+def handle_web_request(request, worldsocket, UPSsocket):
+    wp = WebRequestParser(request)
+    if wp.isBuy():
+        #wp.add_num_in_warehoust()
+        wp.getAPurchaseMore(0)
+        wp.getAPack(1)
+        wp.getAOrderPlaced(2)
+        print("ACommands")
+        print(wp.getACommands())
+        # print("Acommunicates")
+        # print(wp.getACommunicate())
+        send_request(worldsocket, wp.getACommands())
+        # send_request(UPSsocket, wp.getACommunicate())
+    else:
+        pass
+
+def resend_ACommands(worldsocket):
+    while True:
+        time.sleep(30)
+        cmdlist = select_timeout_from_ACommands()
+        for cmd in cmdlist:
+            send_request(worldsocket, cmd)
+    pass
+
+def resend_ACommunicate(UPSsocket):
+    while True:
+        time.sleep(30)
+        cmdlist = select_timeout_from_ACommunicate()
+        for cmd in cmdlist:
+            send_request(UPSsocket, cmd)
+    pass
+
+
+def send_request(sock, request):
+    """Send protocol buffer over connected socket
+
+    Args:
+        request -- a protocol buffer
+    """
+    message = request.SerializeToString()
+    _EncodeVarint(sock.send, len(message), None)
+    sock.sendall(message)
+
+
+def recv_response(sock):
+    """Return a protocol buffer over connected socket
+    """
+    var_int_buff = []
+    count = 0
+
+    while True:     # get the length of the message
+        try:
+            count += 1
+            buf = sock.recv(1)
+            var_int_buff += buf
+            # print("Buff has size " + str(len(var_int_buff)))
+            # msg_len, new_pos = _DecodeVarint32(var_int_buff, 0)
+            # if new_pos != 0:
+            #     break
+
+            msg_len, new_pos = _DecodeVarint32(var_int_buff, 0)
+            if new_pos != 0:
+                break
+        except:
+            continue
+    print(msg_len)
+    whole_message = sock.recv(msg_len)
+    # response = amazon_pb2.AConnected()
+    # response.ParseFromString(whole_message)
+    return whole_message
+
+def send_CMDs(worldsocket, UPSsocket):
+    while True:
+        time.sleep(5)
+        acommand, acommu = generate_Commands()
+        if acommand and acommu:
+            print("sending APack to world")
+            print(acommand)
+            send_request(worldsocket, acommand)
+            print("sending AOrderPlaced to UPS")
+            print(acommu)
+            send_request(UPSsocket, acommu)
+
+
+class WebProxy:
+    """Web proxy server responsible for interaction with world
+
+    set up a socket listening for connection from web
+    parse Acommands from web
+    generate Acommands to the world and send to world
+
+    generate UCommunicate for UPSProxy
+    """
+    def __init__(self, host = '', port = 55555, worldid = 0):
+        """initialize host and port for UPS and Web connection
+        """
+        self.host = host
+        self.port = port
+        self.worldhost = worldhost
+        self.UPSconn = None
+        self.Webconn = None # check if it is None
+        self.worldid = worldid
+        self.connect_to_UPS()
+        self.connect_to_world()
+
+
+    def run(self):
+        worldhandler = threading.Thread(target=listen_for_world, args=(self.worldsocket, self.UPSsocket))
+        worldhandler.start()
+        UPShandler = threading.Thread(target=listen_for_UPS, args=(self.worldsocket, self.UPSsocket))
+        UPShandler.start()
+        webhandler = threading.Thread(target=listen_for_web, args=(self.proxysocket, self.worldsocket, self.UPSsocket))
+        webhandler.start()
+        timeoutACommands = threading.Thread(target=resend_ACommands, args=(self.worldsocket, ))
+        timeoutACommands.start()
+        timeoutACommunicate = threading.Thread(target=resend_ACommunicate, args=(self.UPSsocket, ))
+        timeoutACommunicate.start()
+        sendToPack = threading.Thread(target=send_CMDs, args=(self.worldsocket, self.UPSsocket))
+        sendToPack.start()
+
+
+    def connect_to_UPS(self):
+        self.proxysocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.proxysocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.proxysocket.bind((self.host, self.port))
+        self.proxysocket.listen()
+        while True:
+            print("Waiting for UPS connection")
+            (self.UPSsocket, (ip,port)) = self.proxysocket.accept()
+            while True:
+                whole_message = recv_response(self.UPSsocket)
+                response = commu_pb2.AUConnect()
+                try:
+                    response.ParseFromString(whole_message)
+                except:
+                    continue
+                print(response)
+                print("World id is %d" % response.worldid)
+                self.worldid = response.worldid
+                break
+            break
+            # if ip == UPShost:
+            #     self.UPSconn = conn
+            #     print('UPS connected by', (ip, port))
+            #     break
+        # elif ip == Webhost:
+        #     self.Webconn = conn
+        #     print('Web connected by', (ip, port))
+
+
+    def connect_to_world(self, addr=worldaddr):
+        self.worldsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.worldsocket.connect(addr)
+
+        request = amazon_pb2.AConnect()
+        request.worldid = self.worldid
+
+        wh = request.initwh.add()
+        wh.id = 1
+        wh.x = 1
+        wh.y = 1
+
+        request.isAmazon = True
+        print(request)
+        send_request(self.worldsocket, request)
+
+        while True:
+            whole_message = recv_response(self.worldsocket)
+            response = amazon_pb2.AConnected()
+            try:
+                response.ParseFromString(whole_message)
+            except:
+                continue
+            print(response)
+            print("World id is %d" % response.worldid)
+            break
+
+
+
+
+
+def main():
+    #worldid = int(input("Enter world id: "))
+    wp = WebProxy()
+    wp.run()
+
+
+if __name__ == '__main__':
+    main()

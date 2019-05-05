@@ -1,0 +1,29 @@
+{% extends "../base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% load crispy_forms_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rate Your Product Experience</title>
+</head>
+{% if user.is_authenticated %}
+{% block breadcrumb %}
+<p>Create Your Review</p><br>
+{% endblock %}
+{% block content %}
+
+<body>
+
+    Product Name: <b>{{proname}}</b>
+    <form method="POST">
+       {{ form|crispy }}
+        {% csrf_token %}
+    <input type="submit" value="submit">
+    </form>
+</body>
+{% endblock %}
+
+    {% endif %}
+</html>

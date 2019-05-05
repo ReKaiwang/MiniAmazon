@@ -1,0 +1,26 @@
+{% extends "../base.html" %}
+{% load crispy_forms_tags %}
+{% block breadcrumb %}
+<h2>Create Account</h2>
+{% endblock %}
+
+{% block content %}
+
+<form method="post">
+  {% csrf_token %}
+  username: <input name="username" class="form-control" required="" type="text">
+  password: <input name="password" class="form-control" required="" type="password">
+  email: <input name="email", class="form-control" required="" type="email">
+  <button type="submit" class="btn btn-primary">SignUp</button>
+</form>
+{% if messages %}
+  <script>
+    {% for msg in messages%}
+      alert('{{msg.message}}')
+      {%endfor%}
+  </script>
+{% endif %}
+
+{% endblock %}
+
+

@@ -1,0 +1,47 @@
+[
+  {
+    "pk": 1,
+     "model": "order.wareHouse",
+    "fields": {
+      "productname": "Apple",
+      "description": "Apple is an American multinational technology company headquartered in Cupertino, California, that designs, develops, and sells consumer electronics, computer software, and online services.",
+      "count": 0
+    }
+  },
+  {
+    "pk": 2,
+    "model": "order.wareHouse",
+    "fields": {
+      "productname": "Google",
+      "description": "Google is an American multinational technology company that specializes in Internet-related services and products, which include online advertising technologies, search engine, cloud computing, software, and hardware. ",
+      "count": 0
+    }
+  },
+  {
+    "pk": 3,
+    "model": "order.wareHouse",
+    "fields": {
+      "productname": "Str.8 Yanzu",
+      "description": "Str.8 Yanzu is the most handsome and sexy man in the Duke campus",
+      "count": 0
+    }
+  },
+  {
+    "pk": 4,
+    "model": "order.wareHouse",
+    "fields": {
+      "productname": "Yamahui",
+      "description": "Yamahui in the daytime is a normal rich software engineer in Amazon Company who can solve complicated problem within 3 minutes",
+      "count": 0
+    }
+  },
+  {
+    "pk": 5,
+    "model": "order.wareHouse",
+    "fields": {
+      "productname": "Water Like Man",
+      "description": "Water like man is a transformation of Yamahui in the night who possess a genius-level intellect and will fight with evils",
+      "count": 0
+    }
+  }
+]

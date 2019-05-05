@@ -1,0 +1,11 @@
+{% extends "../base.html" %}
+{% if user.is_authenticated %}
+{% block breadcrumb %}
+Your Ship Id is : <br>
+<b> {{shipid}}</b>
+{% endblock %}
+{% block content %}
+
+{% endblock %}
+
+{% endif %}

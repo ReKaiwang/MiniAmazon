@@ -1,0 +1,25 @@
+ {% extends "../base.html" %}
+{% load crispy_forms_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout</title>
+</head>
+{% if user.is_authenticated %}
+
+{% block content %}
+
+<body>
+   
+<form method="POST">
+     {{ form|crispy }}
+     {% csrf_token %}
+     <br>
+    <input type="submit" class="btn btn-primary" value="Finish">
+</form>
+</body>
+{% endblock %}
+
+{%endif%}
+</html>

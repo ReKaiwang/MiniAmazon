@@ -1,0 +1,64 @@
+{% extends "../base.html" %}
+{% load static %}<!DOCTYPE html>
+
+{% if user.is_authenticated %}
+
+{% block content %}
+    <div class="container">
+        <ol class="breadcrumb my-4">
+          <li class="breadcrumb-item active">Current products in your cart</li>
+        </ol>
+        
+        {% if number == 0%}
+            <p>Your cart is empty right now.</p>
+        {%else%}
+            <form method="POST">
+                {% csrf_token %}
+                <table class="table">
+                    <thead class="thead-inverse">
+                        <tr>
+                          <th>Product Name</th>
+                          <!--<th>Description</th>-->
+                          <th>Count</th>
+                          <th>Edit</th>
+                          <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                      {% for pro in list %}
+		      <tr>
+                        {% if pro.productid == 1 %}
+                        <td>Apple</td>
+                        {% else %}
+                        {% if pro.productid == 2 %}
+                        <td>Google</td>
+                        {% else %}
+                                        {% if pro.productid == 3 %}
+                                            <td>Str.8 Yanzu</td>
+                                            {% else %}
+                                                {% if pro.productid == 4 %}
+                                                     <td>Yamahui</td>
+                                                     {% else %}
+                                                     {% if pro.productid == 5 %}
+                                                        <td>Water Like Man</td>
+                                                    {% endif %}
+                                                {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                                <td><input type = "number", class="btn btn-light", name = "{{pro.id}}" , value="{{pro.count}}" ></td>
+                                <td><input type="submit", class="btn btn-primary", name="{{pro.id}}" value="Edit" >
+                                <td><input type="submit", class="btn btn-primary", name={{pro.id}} value="Delete">
+                                </tr>
+                            {% endfor %}
+
+                    </tbody>
+                </table>
+            </form>
+    
+            <a href="{% url 'checkout' %}"> <button class="btn btn-success">Check Out</button></a>
+        {%endif%}  
+    </div> 
+{% endblock %}
+{%endif%}

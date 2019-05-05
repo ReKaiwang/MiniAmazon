@@ -1,0 +1,44 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}MiniAmazon{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+  </head>
+  
+  <body>
+    {% if request.user.is_authenticated %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+	<a href="{% url 'homepage'%}">Home</a>
+	<a href="{% url 'browsePro'%}">Browse Product</a> <br>
+	<a href="{% url 'productlist' %}">Product Category</a> <br>
+        <a href="{% url 'viewcarts' %}" >Check Carts</a><br>
+        <a href="{% url 'checkOrder' %}">Check Order</a> <br>
+        <a href="{% url 'logout' %}">Logout</a>
+      </div>
+    </nav>
+    {% else %}
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+	<div class="container">	  
+	  <a href="{% url 'login' %}">Login</a>
+	  <a href="{% url 'signup' %}">Signup</a>
+	</div>
+      </nav>
+    {% endif %}
+    <div class="container">
+        <ol class="breadcrumb my-4">
+          {% block breadcrumb %}
+	      {% if not request.user.is_authenticated %}
+	          <center><p>You are not logged in</p></center>
+              {% endif %}
+          {% endblock %}
+        </ol>
+
+        {% block content %}
+        {% endblock %}
+
+    
+    </div>
+  </body>
+</html>

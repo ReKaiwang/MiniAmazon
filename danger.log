@@ -1,0 +1,8 @@
+2019-04-15: have trouble with google buffer
+2019-04-16: Forget to use try and catch to find debug
+2019-04-17: connect troubloe between our website with our proxy
+2019-04-17: our proxy has some concurrency problem
+2019-04-17: Some different kinds of errors will have the same error message or even irrelevent error messages. We cannot figure out what's wrong with the requests.
+2019-04-19: We find that the world will lost some package which generates big problem under the circumstance when 'pack' is received but 'Apuchasemore' is lost. 
+2019-04-20: error happens when use bootstrap
+2019-04-20: connection error happens during email sending

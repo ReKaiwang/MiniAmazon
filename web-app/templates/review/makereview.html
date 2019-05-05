@@ -1,0 +1,24 @@
+{% extends "../base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% if user.is_authenticated %}
+{% block breadcrumb %}
+<p>Create Your Review</p><br>
+{% endblock %}
+{% block content %}
+
+<body>
+
+    Product Name: <b>{{proname}}</b>
+    <form method="POST">
+       {{ form|crispy }}
+        {% csrf_token %}
+    <input type="submit" class="btn btn-primary" value="submit">
+    </form>
+</body>
+{% endblock %}
+
+{% endif %}
+

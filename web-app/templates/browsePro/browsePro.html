@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% if user.is_authenticated %}
+{% block breadcrumb %}
+
+{% endblock %}
+{% block content %}
+
+    <div class="container">
+    <form method="POST">
+        {{form.as_p}}
+        {% csrf_token %}
+        <input type="submit" class="btn btn-primary" value="Add to Carts">
+    </form>
+    </div>
+
+{% endblock %}
+{% endif %}

@@ -1,0 +1,17 @@
+{% extends "../base.html" %}
+
+{% if user.is_authenticated %}
+{% block breadcrumb %}
+    <p>Check Order By Ship ID</p>
+{% endblock %}
+
+{% block content %}
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="search">
+	<input type="submit" class="btn btn-primary" value="search"><br>
+	<input type="submit" class="btn btn-primary" value="show all order history" name = "showlist">
+    </form>
+{% endblock %}
+
+{%endif%}

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block breadcrumb %}
+{% if request.user.is_authenticated %}
+<p>Welcome to MiniAmazon</p>
+{% endif %}
+{% endblock %}
+
+
+

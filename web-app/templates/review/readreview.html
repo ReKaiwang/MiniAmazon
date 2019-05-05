@@ -1,0 +1,36 @@
+{% extends "../base.html" %}
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Review</title>
+</head>
+{% if user.is_authenticated %}
+{% block content %}
+<body>   
+    {% if number == 0%}
+ <p>There is no review right now.</p>
+    {%else%}
+<form>
+    <table border="1">
+            <tr>
+            <th>Product Name</th>
+            <!--<th>Description</th>-->
+            <th>Rate</th>
+                <th>Review</th>
+            </tr>
+    {% for pro in list %}
+        <tr>
+            <td>{{proname}}</td>
+            <td>{{pro.rate}}</td>
+            <td>{{pro.review}}</td>
+        </tr>
+        {% endfor %}
+          </table>
+</form>
+{%endif%}
+</body>
+{% endblock %}
+
+    {% endif %}
+</html>

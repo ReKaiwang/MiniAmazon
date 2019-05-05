@@ -1,0 +1,73 @@
+{% extends "../base.html" %}
+
+
+{% if user.is_authenticated %}
+        {% if number == 0 %}
+
+ <p>Your order history is empty or wrong ship ID.</p>
+          
+           
+
+        {% else %}
+
+    {% block content %}
+    <div class="container">
+
+            <form method = 'post'>
+                {% csrf_token %}
+                <table class="table">
+                <thead class="thead-inverse">
+                    <tr>
+                        <th>Shipping Number</th>
+                        <!--<th>Description</th>-->
+                        <th>Status</th>
+                        <th>Address X</th>
+                        <th>Address Y</th>
+                        <th>Product Name</th>
+                        <th>Count</th>
+                        <th>Make Review</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pro in list %}
+                    <tr>
+                        <td>{{pro.shipid}}</td>
+                        <td>{{pro.status}}</td>
+                        <td>{{pro.addressx}}</td>
+                        <td>{{pro.addressy}}</td>
+                        {% if pro.productid == 1 %}
+                                <td>Apple</td>
+                            {% else %}
+                                {% if pro.productid == 2 %}
+                                    <td>Google</td>
+                                 {% else %}
+                                    {% if pro.productid == 3 %}
+                                        <td>Str.8 Yanzu</td>
+                                        {% else %}
+                                            {% if pro.productid == 4 %}
+                                                 <td>Yamahui</td>
+                                                 {% else %}
+                                                 {% if pro.productid == 5 %}
+                                                    <td>Water Like Man</td>
+                                                {% endif %}
+                                            {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                        <td>{{pro.count}}</td>
+                        {% if pro.status == "Delivered" %}
+                            <td><input type = "submit", class="btn btn-primary", name = "{{pro.productid}}" , value="Write Review" ></td>
+                        {% else %}
+                        <td>Can't make review until delivered</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+            </form>
+
+
+    </div> 
+    {% endblock %}
+    {% endif %}
+{% endif %}

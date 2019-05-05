@@ -1,0 +1,42 @@
+{% extends "../base.html" %}
+{% block breadcrumb %}
+    <p>Products we have!</p>
+{% endblock %}
+{% if user.is_authenticated %}
+
+{% block content %}
+
+    {% if number == 0%}
+        <p>Sorry we don't have such product!</p>
+    {%else%}
+	<form method="post">
+          {% csrf_token %}
+	  <table class="table">
+            <thead class="thead-inverse">
+            <tr>
+              <th>Product Name</th>
+              <th>Description</th>-
+              <th>Customer Review</th>
+            </tr>
+            </thead>
+	    <tbody>
+            {% for pro in list %}
+            <tr>
+              <td>{{pro.productname}}</td>
+              <td>{{pro.description}}</td>
+              <td><input type="submit"class="btn btn-primary" name="{{pro.productid}}" value="See Review"></td>
+            </tr>
+            {% endfor %}
+	    </tbody>
+	  </table>
+        </form>
+    {% endif %}
+
+{% endblock %}
+
+{%endif%}
+
+
+
+
+
